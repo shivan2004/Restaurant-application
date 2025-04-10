@@ -17,6 +17,7 @@ const App = () => {
                 <NavigationBar />
                 <div className="flex-fill">
                     <Routes>
+                        {/*<Route path="/" element= {<Tables />}/>*/}
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/menu" element={<MenuPage />} />
                         <Route path="/completed-orders" element={<CompletedOrders />} />
