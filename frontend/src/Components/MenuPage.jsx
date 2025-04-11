@@ -1,69 +1,53 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card, Container, Row, Col, Form, Button } from 'react-bootstrap';
 import axios from "axios";
 
-const MenuPage = () => {
+const MenuPage = ({ onNewItemAdded }) => {
     const [menuItems, setMenuItems] = useState([]);
     const [newItem, setNewItem] = useState({ item: '', price: '', category: 'BREAKFAST' });
     const [selectedCategory, setSelectedCategory] = useState('BREAKFAST');
 
-    useEffect(() => {
-        fetchMenuItems(selectedCategory);
-    }, [selectedCategory]);
+    const getToken = () => localStorage.getItem("token");
 
-    const fetchMenuItems = async (category) => {
+    const fetchMenuItems = useCallback(async (category) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/items/getAllItemsByCategory/${category}`);
+            const response = await fetch(`http://localhost:8080/api/items/getAllItemsByCategory/${category}`, {
+                headers: {
+                    Authorization: `Bearer ${getToken()}`
+                }
+            });
             const data = await response.json();
             setMenuItems(data);
         } catch (e) {
             console.error("Error fetching menu items:", e.message);
         }
-    };
+    }, []);
 
-    // const toggleAvailability = async (itemId) => {
-    //     try {
-    //         await fetch(`http://localhost:8080/api/items/toggleAvailability/${itemId}`, {
-    //             method: "PUT",
-    //         });
-    //         setMenuItems(prevItems =>
-    //             prevItems.map(item =>
-    //                 item.id === itemId ? { ...item, isAvailable: !item.isAvailable } : item
-    //             )
-    //         );
-    //     } catch (e) {
-    //         console.error("Error toggling availability:", e.message);
-    //     }
-    // };
+    useEffect(() => {
+        fetchMenuItems(selectedCategory);
+    }, [selectedCategory, fetchMenuItems]);
 
     const toggleAvailability = async (itemId) => {
-        // eslint-disable-next-line no-unused-vars
-        const response = await axios.put(`http://localhost:8080/api/items/toggleAvailability/${itemId}`)
-            .then(
-                setMenuItems(prevItems =>
-                    prevItems.map(item =>
-                        item.id === itemId ? { ...item, isAvailable: !item.isAvailable } : item
-                    )
+        try {
+            await axios.put(
+                `http://localhost:8080/api/items/toggleAvailability/${itemId}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${getToken()}`
+                    }
+                }
+            );
+
+            setMenuItems(prevItems =>
+                prevItems.map(item =>
+                    item.id === itemId ? { ...item, isAvailable: !item.isAvailable } : item
                 )
-            )
-
-    }
-
-
-
-    //
-    // useEffect(() => {
-    //     axios.get(`/api/products/show/${id}`)
-    //         .then(response => {
-    //             setProduct(response.data);
-    //             setLoading(false);
-    //         })
-    //         .catch(() => {
-    //             setError("Failed to fetch product details.");
-    //             setLoading(false);
-    //         });
-    // }, [id]);
-
+            );
+        } catch (e) {
+            console.error("Error toggling availability:", e.message);
+        }
+    };
 
     const addNewItem = async () => {
         if (!newItem.item || !newItem.price) {
@@ -74,11 +58,20 @@ const MenuPage = () => {
         try {
             await fetch("http://localhost:8080/api/items/postItem", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...newItem, category: newItem.category.toUpperCase(), isAvailable: true }),
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${getToken()}`
+                },
+                body: JSON.stringify({
+                    ...newItem,
+                    category: newItem.category.toUpperCase(),
+                    isAvailable: true
+                }),
             });
             setNewItem({ item: '', price: '', category: 'BREAKFAST' });
             fetchMenuItems(selectedCategory);
+
+            if (onNewItemAdded) onNewItemAdded(); // Trigger live orders reload
         } catch (e) {
             console.error("Error adding new item:", e.message);
         }
@@ -97,7 +90,6 @@ const MenuPage = () => {
                 </Col>
             </Row>
             <Row>
-                {/* Menu Items */}
                 <Col md={8}>
                     <Row>
                         {menuItems.length > 0 ? (

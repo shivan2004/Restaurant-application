@@ -4,11 +4,17 @@ import { Card, Row, Col } from 'react-bootstrap';
 const Reviews = () => {
     const [reviews, setReviews] = useState([]);
 
-    // Fetch reviews and ratings from backend
+    const getToken = () => localStorage.getItem("token");
+
+    // Fetch reviews and ratings from backend with Authorization header
     useEffect(() => {
         const fetchReviews = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/rating/getAllRatings');
+                const response = await fetch('http://localhost:8080/api/rating/getAllRatings', {
+                    headers: {
+                        Authorization: `Bearer ${getToken()}`
+                    }
+                });
                 const data = await response.json();
                 setReviews(data); // Set the reviews data
             } catch (error) {
@@ -57,9 +63,11 @@ const Reviews = () => {
             <Row className="justify-content-center">
                 {reviews.map((review, index) => (
                     <Col md={4} sm={12} key={review.id} className="mb-4 d-flex">
-                        <Card className="text-center w-100 d-flex" style={{ minHeight: '250px' }}> {/* Equal height for all cards */}
+                        <Card className="text-center w-100 d-flex" style={{ minHeight: '250px' }}>
                             <Card.Body className="d-flex flex-column justify-content-between">
-                                <Card.Text style={{ fontSize: '1.1rem' }}>{review.review || "No review available"}</Card.Text> {/* Ensure empty reviews have text */}
+                                <Card.Text style={{ fontSize: '1.1rem' }}>
+                                    {review.review || "No review available"}
+                                </Card.Text>
                                 <div>{renderStars(review.rating)}</div>
                             </Card.Body>
                         </Card>

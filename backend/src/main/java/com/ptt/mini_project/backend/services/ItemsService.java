@@ -35,6 +35,7 @@ public class ItemsService {
 
     public Item postNewItem(Item item) {
         log.info("Creating new Item");
+//        if(itemsRepository.findByItem(item.getItem())) throw new RuntimeException("Item Already exists");
         Item savedItem = itemsRepository.save(item);
         return savedItem;
     }
