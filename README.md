@@ -6,6 +6,8 @@ This is a **full-stack web application** designed for **restaurant management**.
 You can access the live application here:  
 [Restaurant Application Demo](https://shivan-restaurant-application.netlify.app/)
 
+> **Note**: Please allow a few minutes for the backend server to fully start before using the application.
+
 ---
 
 ## **Features**
@@ -31,27 +33,25 @@ You can access the live application here:
 
 ## **Screenshots**
 
-Here are a few screenshots showcasing different parts of the application (optimized for smaller size):
+Here are a few screenshots showcasing different parts of the application:
 
 - **Register Screen**  
-  ![Register](./images/register-small.png)
+  ![Register](./images/register.png)
 
 - **Login Screen**  
-  ![Login](./images/login-small.png)
+  ![Login](./images/login.png)
 
 - **Menu Management (Admin)**  
-  ![Menu Management](./images/menu-management-small.png)
+  ![Menu Management](./images/menu-management.png)
 
 - **Live Orders (Kitchen)**  
-  ![Live Orders](./images/live-orders-small.png)
+  ![Live Orders](./images/live-orders.png)
 
 - **Completed Orders (Admin)**  
-  ![Completed Orders](./images/completed-orders-small.png)
+  ![Completed Orders](./images/completed-orders.png)
 
 - **Customer Reviews**  
-  ![Customer Reviews](./images/customer-reviews-small.png)
-
-> **Note**: All images are resized for quick loading and concise presentation.
+  ![Customer Reviews](./images/customer-reviews.png)
 
 ---
 
