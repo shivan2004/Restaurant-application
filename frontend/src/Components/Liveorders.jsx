@@ -1,33 +1,67 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Button, Card, Col, Row } from "react-bootstrap";
+
+// Helper to decode JWT
+const decodeJWT = (token) => {
+    if (!token) return null;
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+            atob(base64).split('').map(c =>
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join('')
+        );
+        return JSON.parse(jsonPayload);
+    } catch (err) {
+        console.error("JWT Decode Error:", err);
+        return null;
+    }
+};
 
 const Liveorders = ({ fetchLiveOrdersTrigger }) => {
     const [liveOrders, setLiveOrders] = useState([]);
+    const [role, setRole] = useState(undefined);
+
+    const getToken = () => localStorage.getItem("token");
 
     useEffect(() => {
-        fetchLiveOrders();
-    }, [fetchLiveOrdersTrigger]); // Reload when trigger changes
+        const token = getToken();
+        const decoded = decodeJWT(token);
+        setRole(decoded?.role ?? null);
+    }, []);
 
-    // Function to fetch live orders
-    const fetchLiveOrders = async () => {
+    const fetchLiveOrders = useCallback(async () => {
         try {
-            const response = await fetch("http://localhost:8080/api/orders/getAllFinalizedOrders");
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/getAllFinalizedOrders`, {
+                headers: {
+                    Authorization: `Bearer ${getToken()}`
+                }
+            });
             const data = await response.json();
             setLiveOrders(data);
         } catch (e) {
             console.error("Error fetching live orders:", e.message);
         }
-    };
+    }, []);
 
-    // Function to complete an order
+    useEffect(() => {
+        if (role !== undefined) {
+            fetchLiveOrders();
+        }
+    }, [fetchLiveOrders, fetchLiveOrdersTrigger, role]);
+
     const completeOrder = async (orderId) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/orders/orderCompleted/${orderId}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/orderCompleted/${orderId}`, {
                 method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${getToken()}`
+                }
             });
 
             if (response.ok) {
-                fetchLiveOrders(); // Refresh live orders list after completion
+                fetchLiveOrders(); // Refresh the list
             } else {
                 alert(`Failed to complete order #${orderId}`);
             }
@@ -35,6 +69,10 @@ const Liveorders = ({ fetchLiveOrdersTrigger }) => {
             console.error("Error completing order:", error);
         }
     };
+
+    if (role === undefined) {
+        return <p className="text-center mt-3">Loading...</p>;
+    }
 
     return (
         <Row className="justify-content-center">
@@ -44,25 +82,25 @@ const Liveorders = ({ fetchLiveOrdersTrigger }) => {
                         <Card className="shadow-sm text-center p-3">
                             <Card.Body>
                                 <Card.Title className="fw-bold">Order #{liveOrder.id}</Card.Title>
-
-                                {/* Display order items */}
                                 {liveOrder.orderItems.map((orderItem, index) => (
                                     <Card.Text key={index}>
                                         {orderItem.itemName} : {orderItem.quantity}
                                     </Card.Text>
                                 ))}
-
                                 <Card.Text className="text-primary fs-5">
                                     ₹{liveOrder.totalPrice}
                                 </Card.Text>
 
-                                <Button
-                                    variant="success"
-                                    className="w-100"
-                                    onClick={() => completeOrder(liveOrder.id)}
-                                >
-                                    Complete Order
-                                </Button>
+                                {/* Show Complete Order only if not CUSTOMER */}
+                                {role !== "CUSTOMER" && (
+                                    <Button
+                                        variant="success"
+                                        className="w-100"
+                                        onClick={() => completeOrder(liveOrder.id)}
+                                    >
+                                        Complete Order
+                                    </Button>
+                                )}
                             </Card.Body>
                         </Card>
                     </Col>

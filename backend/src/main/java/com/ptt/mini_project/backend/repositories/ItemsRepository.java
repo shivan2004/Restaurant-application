@@ -13,5 +13,7 @@ public interface ItemsRepository extends JpaRepository<Item, Long> {
     Optional<Item> findByItemContainingIgnoreCase(String item);
     List<Item> findAllByCategoryAndIsAvailableTrue(Category category);
     List<Item> findAllByCategory(Category category);
+    Optional<Item> findByItemIgnoreCase(String itemName);
 
+    boolean findByItem(String item);
 }

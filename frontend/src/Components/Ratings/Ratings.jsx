@@ -2,17 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Row, Col, Card } from 'react-bootstrap';
 
 const Ratings = () => {
-    const [rating, setRating] = useState(0); // Rating selected by user (1-5)
+    const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
     const [averageRating, setAverageRating] = useState(0);
+    const getToken = () => localStorage.getItem("token");
 
     // Fetch the current average rating when the component mounts
     useEffect(() => {
         const fetchAverageRating = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/rating/getStars');
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/rating/getStars`, {
+                    headers: {
+                        Authorization: `Bearer ${getToken()}`,
+                    },
+                });
                 const data = await response.json();
-                setAverageRating(data); // Set the average rating (double value)
+                setAverageRating(data);
             } catch (error) {
                 console.error('Error fetching average rating:', error);
             }
@@ -21,31 +26,40 @@ const Ratings = () => {
         fetchAverageRating();
     }, []);
 
-    // Handle rating form submission
     const handleRatingSubmit = async () => {
         const ratingData = {
-            review: comment,  // Include the comment
-            rating: rating,   // Send the rating value (1-5)
+            review: comment,
+            rating: rating,
         };
 
         try {
-            const response = await fetch('http://localhost:8080/api/rating/postRating', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/rating/postRating`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${getToken()}`,
+                },
                 body: JSON.stringify(ratingData),
             });
 
             if (response.ok) {
                 setComment('');
-                setRating(0); // Reset rating after submission
-                // Re-fetch average rating after new rating submission
-                const fetchAverageRating = async () => {
-                    const response = await fetch('http://localhost:8080/api/rating/getStars');
-                    const data = await response.json();
-                    setAverageRating(data); // Update average rating
-                };
+                setRating(0);
 
-                fetchAverageRating();
+                // Delay the fetch of average rating to avoid visual glitch
+                setTimeout(async () => {
+                    try {
+                        const updatedResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/rating/getStars`, {
+                            headers: {
+                                Authorization: `Bearer ${getToken()}`,
+                            },
+                        });
+                        const updatedData = await updatedResponse.json();
+                        setAverageRating(updatedData);
+                    } catch (fetchError) {
+                        console.error('Error re-fetching average rating:', fetchError);
+                    }
+                }, ); // Delay by 500ms
             } else {
                 console.error('Failed to submit rating');
             }
@@ -54,43 +68,43 @@ const Ratings = () => {
         }
     };
 
-    // Handle star click to set rating
     const handleStarClick = (value) => {
         setRating(value);
     };
 
-    // Function to render stars with partial fill based on decimal value
     const renderStars = (ratingValue) => {
         const stars = [];
-        const fullStars = Math.floor(ratingValue); // Full stars
-        const remainder = ratingValue - fullStars; // Partial fill (decimal)
-        const starSize = '2rem'; // Size of the star
+        const starSize = '2rem';
+        const fullStars = Math.floor(ratingValue);
+        const remainder = ratingValue - fullStars;
 
-        // Render full stars
         for (let i = 0; i < fullStars; i++) {
             stars.push(
-                <span key={i} style={{ color: 'gold', fontSize: starSize }}>&#9733;</span> // Full Star
+                <span key={`full-${i}`} style={{ color: 'gold', fontSize: starSize }}>&#9733;</span>
             );
         }
 
-        // Render partial star
         if (remainder > 0) {
-            const starStyle = {
-                fontSize: starSize,
-                background: `linear-gradient(to right, gold ${remainder * 100}%, gray ${remainder * 100}%)`,
-                WebkitBackgroundClip: 'text',
-                color: 'transparent',
-                display: 'inline-block',
-            };
             stars.push(
-                <span key={fullStars} style={starStyle}>&#9733;</span> // Partial Star
+                <span key="partial" style={{ position: 'relative', display: 'inline-block', fontSize: starSize }}>
+                <span style={{ color: 'gray' }}>&#9733;</span>
+                <span style={{
+                    color: 'gold',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: `${remainder * 100}%`,
+                    overflow: 'hidden',
+                }}>
+                    &#9733;
+                </span>
+            </span>
             );
         }
 
-        // Render empty stars
         for (let i = fullStars + (remainder > 0 ? 1 : 0); i < 5; i++) {
             stars.push(
-                <span key={i} style={{ color: 'gray', fontSize: starSize }}>&#9733;</span> // Empty Star
+                <span key={`empty-${i}`} style={{ color: 'gray', fontSize: starSize }}>&#9733;</span>
             );
         }
 
@@ -101,23 +115,20 @@ const Ratings = () => {
         <div className="container mt-5">
             <h2 className="text-center mb-4 fw-bold">Submit Your Rating</h2>
 
-            {/* Average Rating Display */}
             <Card className="mb-4">
                 <Card.Body>
-                    <h4>Average Rating: {averageRating.toFixed(2)}</h4> {/* Show average with 2 decimals */}
+                    <h4>Average Rating: {averageRating.toFixed(2)}</h4>
                     <div className="star-rating mb-3">
-                        {renderStars(averageRating)} {/* Render stars based on average rating */}
+                        {renderStars(averageRating)}
                     </div>
                 </Card.Body>
             </Card>
 
-            {/* Rating Form with Stars */}
             <Row>
                 <Col md={6}>
                     <Form>
                         <Form.Group controlId="formRating">
                             <Form.Label>Rating (1 to 5)</Form.Label>
-                            {/* Render 5 stars for user to select rating */}
                             <div className="star-rating mb-3">
                                 {[1, 2, 3, 4, 5].map((starValue) => (
                                     <span
@@ -129,7 +140,7 @@ const Ratings = () => {
                                             color: starValue <= rating ? 'gold' : 'gray',
                                         }}
                                     >
-                                        &#9733; {/* Star Character */}
+                                        &#9733;
                                     </span>
                                 ))}
                             </div>

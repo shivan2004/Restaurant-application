@@ -10,13 +10,23 @@ const Dashboard = () => {
     const [showLiveOrders] = useState(true);
     const [fetchLiveOrdersTrigger, setFetchLiveOrdersTrigger] = useState(0);
 
+    const getToken = () => localStorage.getItem("token");
+
     useEffect(() => {
         fetchItems(selectedCategory);
     }, [selectedCategory]);
 
     const fetchItems = async (category) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/items/getItemsAvailableByCategory/${category}`);
+            const response = await fetch(
+
+                `${process.env.REACT_APP_API_URL}/api/items/getItemsAvailableByCategory/${category}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${getToken()}`,
+                    },
+                }
+            );
             const data = await response.json();
             setItems(data);
         } catch (e) {
@@ -32,7 +42,7 @@ const Dashboard = () => {
                     i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
                 );
             } else {
-                return [...prevCart, { id: item.id, itemName: item.item, price: item.price, quantity: 1 }];
+                return [...prevCart, {itemName: item.item, price: item.price, quantity: 1 }];
             }
         });
     };
@@ -60,11 +70,14 @@ const Dashboard = () => {
             isFinalized: true,
             isCompleted: false
         };
-        console.log(cart);
+
         try {
-            const response = await fetch("http://localhost:8080/api/orders/postNewOrder", {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/postNewOrder`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${getToken()}`,
+                },
                 body: JSON.stringify(orderPayload),
             });
 
@@ -119,26 +132,30 @@ const Dashboard = () => {
                                 <>
                                     <Table striped bordered hover>
                                         <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Quantity</th>
-                                            <th>Price</th>
-                                            <th>Action</th>
-                                        </tr>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Quantity</th>
+                                                <th>Price</th>
+                                                <th>Action</th>
+                                            </tr>
                                         </thead>
                                         <tbody>
-                                        {cart.map((item) => (
-                                            <tr key={item.id}>
-                                                <td>{item.itemName}</td>
-                                                <td>{item.quantity}</td>
-                                                <td>₹{item.price * item.quantity}</td>
-                                                <td>
-                                                    <Button variant="danger" size="sm" onClick={() => removeFromCart(item.id)}>
-                                                        Remove
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                            {cart.map((item) => (
+                                                <tr key={item.id}>
+                                                    <td>{item.itemName}</td>
+                                                    <td>{item.quantity}</td>
+                                                    <td>₹{item.price * item.quantity}</td>
+                                                    <td>
+                                                        <Button
+                                                            variant="danger"
+                                                            size="sm"
+                                                            onClick={() => removeFromCart(item.id)}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </Table>
                                     <h5 className="fw-bold">
@@ -156,12 +173,12 @@ const Dashboard = () => {
                     </Card>
                 </Col>
             </Row>
-            {/*{showLiveOrders && (*/}
-            {/*    <>*/}
-            {/*        <h2 className="text-center mb-4 fw-bold">Live Orders</h2>*/}
-            {/*        <Liveorders fetchLiveOrdersTrigger={fetchLiveOrdersTrigger} />*/}
-            {/*    </>*/}
-            {/*)}*/}
+            {/* {showLiveOrders && (
+                <>
+                    <h2 className="text-center mb-4 fw-bold">Live Orders</h2>
+                    <Liveorders fetchLiveOrdersTrigger={fetchLiveOrdersTrigger} />
+                </>
+            )} */}
         </Container>
     );
 };

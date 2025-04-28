@@ -1,14 +1,16 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Dashboard from "./Components/Dashboard";
-import NavigationBar from "./Components/Navbar/Navbar";
-import CompletedOrders from "./Components/CompletedOrders";
-import MenuPage from "./Components/MenuPage";
-import LiveOrdersPage from "./Components/LiveOrdersPage";
-import Footer from './Components/Footer/Footer'; // Import Footer Component
-import Ratings from './Components/Ratings/Ratings'; // Import Ratings Component
-import Reviews from './Components/Ratings/Reviews'
-
+import NavigationBar from './Components/Navbar/Navbar.jsx';
+import Footer from './Components/Footer/Footer';
+import Dashboard from './Components/Dashboard';
+import CompletedOrders from './Components/CompletedOrders';
+import MenuPage from './Components/MenuPage';
+import LiveOrdersPage from './Components/LiveOrdersPage';
+import Ratings from './Components/Ratings/Ratings';
+import Reviews from './Components/Ratings/Reviews';
+import Login from './Components/Login/Login';
+import Home from './Components/Home/Home';
+import ProtectedRoute from './Utils/ProtectedRoute.jsx';
 
 const App = () => {
     return (
@@ -17,13 +19,56 @@ const App = () => {
                 <NavigationBar />
                 <div className="flex-fill">
                     <Routes>
-                        {/*<Route path="/" element= {<Tables />}/>*/}
-                        <Route path="/" element={<Dashboard />} />
-                        <Route path="/menu" element={<MenuPage />} />
-                        <Route path="/completed-orders" element={<CompletedOrders />} />
-                        <Route path="/live-orders" element={<LiveOrdersPage />} />
-                        <Route path="/ratings" element={<Ratings />} />
-                        <Route path="/reviews" element={<Reviews />} /> {/* New route for Reviews */}
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/" element={<Home />} />
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <Dashboard />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/menu"
+                            element={
+                                <ProtectedRoute>
+                                    <MenuPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/completed-orders"
+                            element={
+                                <ProtectedRoute>
+                                    <CompletedOrders />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/live-orders"
+                            element={
+                                <ProtectedRoute>
+                                    <LiveOrdersPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/ratings"
+                            element={
+                                <ProtectedRoute>
+                                    <Ratings />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/reviews"
+                            element={
+                                <ProtectedRoute>
+                                    <Reviews />
+                                </ProtectedRoute>
+                            }
+                        />
                     </Routes>
                 </div>
                 <Footer />

@@ -28,7 +28,7 @@ public class ItemsController {
 
     @PostMapping("/postItem")
     public ResponseEntity<Item> postNewItem(@RequestBody Item item) {
-        return ResponseEntity.ok(itemsService.postNewItem(item));
+        return ResponseEntity.ok(itemsService.createNewItem(item));
     }
 
     @PutMapping("/toggleAvailability/{itemId}")

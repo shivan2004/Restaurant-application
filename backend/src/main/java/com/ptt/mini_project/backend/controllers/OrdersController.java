@@ -19,8 +19,8 @@ public class OrdersController {
     @PostMapping("/postNewOrder")
     public ResponseEntity<Order> postNewOrder(@RequestBody Order order) {
         return ResponseEntity.ok(orderService.postNewOrder(order));
-
     }
+
     @GetMapping("/getOrderById/{id}")
     public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
@@ -33,13 +33,13 @@ public class OrdersController {
     }
 
     @GetMapping("/getAllFinalizedOrders")
-    public ResponseEntity<List<Order>> getAllFinalizedOrders() {
-        return ResponseEntity.ok(orderService.getAllFinalizedOrders());
+    public ResponseEntity<List<Order>> getAllFinalizedOrders(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(orderService.getAllFinalizedOrders(token));
     }
 
     @GetMapping("/getAllCompletedOrders")
-    public ResponseEntity<List<Order>> getAllCompletedOrders() {
-        return ResponseEntity.ok(orderService.getAllCompletedOrders());
+    public ResponseEntity<List<Order>> getAllCompletedOrders(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(orderService.getAllCompletedOrders(token));
     }
 
 }

@@ -6,10 +6,16 @@ const CompletedOrders = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showModal, setShowModal] = useState(false);
 
+    const getToken = () => localStorage.getItem("token");
+
     useEffect(() => {
         const fetchCompletedOrders = async () => {
             try {
-                const response = await fetch("http://localhost:8080/api/orders/getAllCompletedOrders");
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/getAllCompletedOrders`, {
+                    headers: {
+                        Authorization: `Bearer ${getToken()}`
+                    }
+                });
                 const data = await response.json();
                 setCompletedOrders(data);
             } catch (e) {
@@ -79,7 +85,6 @@ const CompletedOrders = () => {
                                     <td>{item.itemName}</td>
                                     <td>{item.quantity}</td>
                                     <td>{item.price * item.quantity}</td>
-                                    {console.log(item)}
                                 </tr>
                             ))}
                             </tbody>

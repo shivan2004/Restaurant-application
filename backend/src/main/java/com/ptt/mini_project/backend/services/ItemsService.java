@@ -6,7 +6,6 @@ import com.ptt.mini_project.backend.exceptions.ResourceNotFoundException;
 import com.ptt.mini_project.backend.repositories.ItemsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,7 +32,7 @@ public class ItemsService {
         return item;
     }
 
-    public Item postNewItem(Item item) {
+    public Item createNewItem(Item item) {
         log.info("Creating new Item");
         Item savedItem = itemsRepository.save(item);
         return savedItem;
