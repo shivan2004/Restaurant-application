@@ -31,25 +31,27 @@ You can access the live application here:
 
 ## **Screenshots**
 
-Here are a few screenshots showcasing different parts of the application:
+Here are a few screenshots showcasing different parts of the application (optimized for smaller size):
 
-- **Register Screen**
-  ![Register](./images/register.png)
+- **Register Screen**  
+  ![Register](./images/register-small.png)
 
-- **Login Screen**
-  ![Login](./images/login.png)
+- **Login Screen**  
+  ![Login](./images/login-small.png)
 
 - **Menu Management (Admin)**  
-  ![Menu Management](./images/menu-management.png)
+  ![Menu Management](./images/menu-management-small.png)
 
 - **Live Orders (Kitchen)**  
-  ![Live Orders](./images/live-orders.png)
+  ![Live Orders](./images/live-orders-small.png)
 
 - **Completed Orders (Admin)**  
-  ![Completed Orders](./images/completed-orders.png)
+  ![Completed Orders](./images/completed-orders-small.png)
 
 - **Customer Reviews**  
-  ![Customer Reviews](./images/customer-reviews.png)
+  ![Customer Reviews](./images/customer-reviews-small.png)
+
+> **Note**: All images are resized for quick loading and concise presentation.
 
 ---
 
@@ -85,7 +87,9 @@ To run this project locally:
     mvn spring-boot:run
     ```
 
-4. Open `http://localhost:3000` for the frontend and `http://localhost:8080` for the backend.
+4. **Important**: After starting the backend server, it may take a few minutes to fully initialize. Please **allow some time for the backend to start**. If the frontend doesn't load or you encounter issues, try restarting the backend server.
+
+5. Open `http://localhost:3000` for the frontend and `http://localhost:8080` for the backend.
 
 ---
 
