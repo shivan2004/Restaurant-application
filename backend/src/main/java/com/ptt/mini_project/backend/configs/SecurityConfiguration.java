@@ -27,7 +27,7 @@ public class SecurityConfiguration {
 
     @Value("${frontend.url}")
     private String url;
-
+    private final String[] PUBLIC_URLs = {"/signup","/login", "/api/items/getAllItems"};
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     public SecurityConfiguration(UserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -54,7 +54,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/signup","/login").permitAll()
+                        .requestMatchers(PUBLIC_URLs).permitAll()
                         .anyRequest().authenticated()
                 )
 //                .httpBasic(Customizer.withDefaults())

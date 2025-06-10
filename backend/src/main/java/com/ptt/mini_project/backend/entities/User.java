@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = "orders")
+@Table(name = "users")
 public class User {
 
     @Id

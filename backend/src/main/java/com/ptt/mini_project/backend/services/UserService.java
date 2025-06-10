@@ -27,7 +27,7 @@ public class UserService {
     private final JwtService jwtService;
 
     public ResponseEntity<Object> signup(User user) {
-        if (user.getEmail() == null || user.getUsername() == null || user.getPassword() == null) {
+        if (user.getEmail() == null || user.getPassword() == null) {
             return new ResponseEntity<>("All Fields are Required", HttpStatus.EXPECTATION_FAILED);
         }
 
