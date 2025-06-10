@@ -36,7 +36,7 @@ public class OrderService {
         if(user == null) {
             throw new RuntimeException("USER NOT FOUND... Login Again");
         }
-        System.out.println(user);
+//        System.out.println(user);
         order.setTotalPrice(computeTotalPrice(order.getOrderItems()));
         order.setUser(user);
         return orderRepository.save(order);
