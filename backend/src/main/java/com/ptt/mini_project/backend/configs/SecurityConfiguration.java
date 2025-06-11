@@ -27,7 +27,7 @@ public class SecurityConfiguration {
 
     @Value("${frontend.url}")
     private String url;
-    private final String[] PUBLIC_URLs = {"/signup","/login", "/api/items/getAllItems"};
+    private final String[] PUBLIC_URLs = {"/signup","/login", "/"};
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     public SecurityConfiguration(UserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
