@@ -6,7 +6,6 @@ const Login = () => {
     const [signUp, setSignUp] = useState(true);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [passwordIssues, setPasswordIssues] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -18,8 +17,7 @@ const Login = () => {
         if (!/[A-Z]/.test(pwd)) issues.push("At least one uppercase letter");
         if (!/[a-z]/.test(pwd)) issues.push("At least one lowercase letter");
         if (!/[0-9]/.test(pwd)) issues.push("At least one number");
-        if (!/[!@#$%^&*(),.?\":{}|<>]/.test(pwd))
-            issues.push("At least one special character");
+        if (!/[!@#$%^&*(),.?\":{}|<>]/.test(pwd)) issues.push("At least one special character");
         return issues;
     };
 
@@ -28,7 +26,7 @@ const Login = () => {
         setLoading(true);
         setError("");
 
-        // ─── Sign-Up Flow ──────────────────────────────────────────
+        // Run validation for sign up
         if (signUp) {
             const issues = validatePassword(password);
             setPasswordIssues(issues);
@@ -36,55 +34,47 @@ const Login = () => {
                 setLoading(false);
                 return;
             }
-
-            const response = await fetch(
-                `${process.env.REACT_APP_API_URL}/signup`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: email.trim(), password }),
-                }
-            );
-
-            if (response.status === 201) {
-                // Flip to login, but KEEP email/password so they remain in the form.
-                setSignUp(false);
-                setPasswordIssues([]);
-            } else {
-                const errText = await response.text();
-                setError(errText);
-            }
-
-            setLoading(false);
-            return;
         }
 
-        // ─── Login Flow ────────────────────────────────────────────
-        const response = await fetch(
-            `${process.env.REACT_APP_API_URL}/login`,
-            {
+        const url = signUp
+            ? `${process.env.REACT_APP_API_URL}/signup` : `${process.env.REACT_APP_API_URL}/login`;
+
+        const payload = { email: email.trim(), password };
+
+        try {
+            const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email.trim(), password }),
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                setError(errText);
+                throw new Error(errText);
             }
-        );
 
-        if (!response.ok) {
-            const errText = await response.text();
-            setError(errText);
+            const data = await response.json();
+
+            if (signUp) {
+                setSignUp(false);
+                setEmail("");
+                setPassword("");
+                setPasswordIssues([]);
+                return;
+            }
+
+            if (data.accessToken) {
+                localStorage.setItem("token", data.accessToken);
+                navigate("/");
+            } else {
+                setError("Login failed: token not received");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
             setLoading(false);
-            return;
         }
-
-        const data = await response.json();
-        if (data.accessToken) {
-            localStorage.setItem("token", data.accessToken);
-            navigate("/"); // go to dashboard/home
-        } else {
-            setError("Login failed: token not received");
-        }
-
-        setLoading(false);
     };
 
     return (
@@ -92,9 +82,7 @@ const Login = () => {
             <form className="form" onSubmit={handleSubmit}>
                 <p className="title">{signUp ? "Register" : "Hey there"}</p>
                 <p className="message">
-                    {signUp
-                        ? "Signup now and get full access to our app."
-                        : "Login to continue"}
+                    {signUp ? "Signup now and get full access to our app." : "Login to continue"}
                 </p>
 
                 <label>
@@ -111,9 +99,9 @@ const Login = () => {
                     <span>Email</span>
                 </label>
 
-                <label style={{ position: "relative" }}>
+                <label>
                     <input
-                        type={showPassword ? "text" : "password"}
+                        type="password"
                         value={password}
                         onChange={(e) => {
                             const val = e.target.value;
@@ -127,34 +115,18 @@ const Login = () => {
                         className="input"
                     />
                     <span>Password</span>
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        style={{
-                            position: "absolute",
-                            right: "10px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: "14px",
-                        }}
-                    >
-                        {showPassword ? "Hide" : "View"}
-                    </button>
                 </label>
 
-                {/* Password rules (sign-up only) */}
+                {/* Password rules */}
                 {signUp && passwordIssues.length > 0 && (
                     <ul style={{ color: "red", fontSize: "14px", paddingLeft: "20px" }}>
-                        {passwordIssues.map((issue, idx) => (
-                            <li key={idx}>{issue}</li>
+                        {passwordIssues.map((issue, index) => (
+                            <li key={index}>{issue}</li>
                         ))}
                     </ul>
                 )}
 
-                {/* Server error */}
+                {/* Server error message */}
                 {error && <p style={{ color: "red", fontSize: "14px" }}>{error}</p>}
 
                 <button className="submit" disabled={loading}>
