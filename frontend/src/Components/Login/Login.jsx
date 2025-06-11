@@ -6,40 +6,21 @@ const Login = () => {
     const [signUp, setSignUp] = useState(true);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [username, setUsername] = useState("");
     const [error, setError] = useState("");
-    const [passwordIssues, setPasswordIssues] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
-    const validatePassword = (pwd) => {
-        const issues = [];
-        if (pwd.length < 8) issues.push("At least 8 characters");
-        if (!/[A-Z]/.test(pwd)) issues.push("At least one uppercase letter");
-        if (!/[a-z]/.test(pwd)) issues.push("At least one lowercase letter");
-        if (!/[0-9]/.test(pwd)) issues.push("At least one number");
-        if (!/[!@#$%^&*(),.?\":{}|<>]/.test(pwd)) issues.push("At least one special character");
-        return issues;
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
-        // Run validation for sign up
-        if (signUp) {
-            const issues = validatePassword(password);
-            setPasswordIssues(issues);
-            if (issues.length > 0) {
-                setLoading(false);
-                return;
-            }
-        }
+        const url = signUp ? `${process.env.REACT_APP_API_URL}/signup` : `${process.env.REACT_APP_API_URL}/login`;
 
-        const url = signUp
-            ? `${process.env.REACT_APP_API_URL}/signup` : `${process.env.REACT_APP_API_URL}/login`;
-
-        const payload = { email: email.trim(), password };
+        const payload = signUp
+            ? { username: username.trim(), email: email.trim(), password }
+            : { email: email.trim(), password };
 
         try {
             const response = await fetch(url, {
@@ -60,18 +41,20 @@ const Login = () => {
                 setSignUp(false);
                 setEmail("");
                 setPassword("");
-                setPasswordIssues([]);
+                setUsername("");
                 return;
             }
 
             if (data.accessToken) {
                 localStorage.setItem("token", data.accessToken);
-                navigate("/");
+                navigate("/"); // Redirect to homepage or dashboard
             } else {
                 setError("Login failed: token not received");
             }
+
         } catch (error) {
             console.error("Error:", error);
+            // setError(error.message || "An unknown error occurred.");
         } finally {
             setLoading(false);
         }
@@ -84,6 +67,24 @@ const Login = () => {
                 <p className="message">
                     {signUp ? "Signup now and get full access to our app." : "Login to continue"}
                 </p>
+
+                {signUp && (
+                    <div className="flex">
+                        <label>
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => {
+                                    setUsername(e.target.value);
+                                    setError("");
+                                }}
+                                required
+                                className="input"
+                            />
+                            <span>Username</span>
+                        </label>
+                    </div>
+                )}
 
                 <label>
                     <input
@@ -104,12 +105,8 @@ const Login = () => {
                         type="password"
                         value={password}
                         onChange={(e) => {
-                            const val = e.target.value;
-                            setPassword(val);
+                            setPassword(e.target.value);
                             setError("");
-                            if (signUp) {
-                                setPasswordIssues(validatePassword(val));
-                            }
                         }}
                         required
                         className="input"
@@ -117,16 +114,6 @@ const Login = () => {
                     <span>Password</span>
                 </label>
 
-                {/* Password rules */}
-                {signUp && passwordIssues.length > 0 && (
-                    <ul style={{ color: "red", fontSize: "14px", paddingLeft: "20px" }}>
-                        {passwordIssues.map((issue, index) => (
-                            <li key={index}>{issue}</li>
-                        ))}
-                    </ul>
-                )}
-
-                {/* Server error message */}
                 {error && <p style={{ color: "red", fontSize: "14px" }}>{error}</p>}
 
                 <button className="submit" disabled={loading}>
@@ -142,7 +129,6 @@ const Login = () => {
                             e.preventDefault();
                             setSignUp(!signUp);
                             setError("");
-                            setPasswordIssues([]);
                         }}
                     >
                         {signUp ? "Login" : "Sign Up"}
