@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
 const Login = () => {
-    const [signUp, setSignUp] = useState(true);
+    const [signUp, setSignUp] = useState(false); // Default is login
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +28,6 @@ const Login = () => {
         setLoading(true);
         setError("");
 
-        // ─── Sign-Up Flow ──────────────────────────────────────────
         if (signUp) {
             const issues = validatePassword(password);
             setPasswordIssues(issues);
@@ -47,7 +46,7 @@ const Login = () => {
             );
 
             if (response.status === 201) {
-                // Flip to login, but KEEP email/password so they remain in the form.
+                // Auto switch to login form after successful signup
                 setSignUp(false);
                 setPasswordIssues([]);
             } else {
@@ -59,7 +58,7 @@ const Login = () => {
             return;
         }
 
-        // ─── Login Flow ────────────────────────────────────────────
+        // Login flow
         const response = await fetch(
             `${process.env.REACT_APP_API_URL}/login`,
             {
@@ -79,7 +78,7 @@ const Login = () => {
         const data = await response.json();
         if (data.accessToken) {
             localStorage.setItem("token", data.accessToken);
-            navigate("/"); // go to dashboard/home
+            navigate("/"); // redirect to home or dashboard
         } else {
             setError("Login failed: token not received");
         }
@@ -145,7 +144,7 @@ const Login = () => {
                     </button>
                 </label>
 
-                {/* Password rules (sign-up only) */}
+                {/* Password issues on signup */}
                 {signUp && passwordIssues.length > 0 && (
                     <ul style={{ color: "red", fontSize: "14px", paddingLeft: "20px" }}>
                         {passwordIssues.map((issue, idx) => (
@@ -154,7 +153,7 @@ const Login = () => {
                     </ul>
                 )}
 
-                {/* Server error */}
+                {/* Error message */}
                 {error && <p style={{ color: "red", fontSize: "14px" }}>{error}</p>}
 
                 <button className="submit" disabled={loading}>
