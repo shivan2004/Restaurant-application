@@ -4,6 +4,7 @@ import com.ptt.mini_project.backend.entities.Item;
 import com.ptt.mini_project.backend.entities.enums.Category;
 import com.ptt.mini_project.backend.services.ItemsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,5 +47,9 @@ public class ItemsController {
         return ResponseEntity.ok(itemsService.getItemsAvailableByCategory(category));
     }
 
-
+    @DeleteMapping("/deleteItem/{itemId}")
+    public ResponseEntity<Void> deleteItemById(@PathVariable Long itemId) {
+        itemsService.deleteItemById(itemId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

@@ -59,4 +59,8 @@ public class ItemsService {
     }
 
 
+    public void deleteItemById(Long itemId) {
+        Item item = getItemById(itemId);
+        itemsRepository.delete(item);
+    }
 }
