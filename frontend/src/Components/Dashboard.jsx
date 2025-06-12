@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Liveorders from "./Liveorders";
 import { Col, Container, Row, Card, Button, Table, Form } from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -9,6 +9,8 @@ const Dashboard = () => {
     const [selectedCategory, setSelectedCategory] = useState("BREAKFAST");
     const [showLiveOrders] = useState(true);
     const [fetchLiveOrdersTrigger, setFetchLiveOrdersTrigger] = useState(0);
+    const [lastUpdatedId, setLastUpdatedId] = useState(null);
+    const timeoutRef = useRef();
 
     const getToken = () => localStorage.getItem("token");
 
@@ -38,25 +40,34 @@ const Dashboard = () => {
         setCart((prevCart) => {
             const existingItem = prevCart.find((i) => i.id === item.id);
             if (existingItem) {
+                setLastUpdatedId(item.id);
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = setTimeout(() => setLastUpdatedId(null), 400);
                 return prevCart.map((i) =>
                     i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
                 );
             } else {
-                return [...prevCart, {itemName: item.item, price: item.price, quantity: 1 }];
+                setLastUpdatedId(item.id);
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = setTimeout(() => setLastUpdatedId(null), 400);
+                return [...prevCart, { itemName: item.item, price: item.price, quantity: 1, id: item.id }];
             }
         });
     };
 
     const removeFromCart = (itemId) => {
-        setCart((prevCart) =>
-            prevCart
+        setCart((prevCart) => {
+            setLastUpdatedId(itemId);
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => setLastUpdatedId(null), 400);
+            return prevCart
                 .map((item) =>
                     item.id === itemId
                         ? { ...item, quantity: item.quantity - 1 }
                         : item
                 )
-                .filter((item) => item.quantity > 0)
-        );
+                .filter((item) => item.quantity > 0);
+        });
     };
 
     const finalizeOrder = async () => {
@@ -132,26 +143,87 @@ const Dashboard = () => {
                                 <>
                                     <Table striped bordered hover>
                                         <thead>
-                                            <tr>
-                                                <th>Item</th>
-                                                <th>Quantity</th>
-                                                <th>Price</th>
-                                                <th>Action</th>
+                                            <tr style={{ height: "60px" }}>
+                                                <th style={{ verticalAlign: "middle", fontSize: "1.2rem" }}>Item</th>
+                                                <th style={{ verticalAlign: "middle", fontSize: "1.2rem" }}>Quantity</th>
+                                                <th style={{ verticalAlign: "middle", fontSize: "1.2rem" }}>Price</th>
+                                                <th style={{ verticalAlign: "middle", fontSize: "1.2rem" }}>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {cart.map((item) => (
-                                                <tr key={item.id}>
-                                                    <td>{item.itemName}</td>
-                                                    <td>{item.quantity}</td>
-                                                    <td>₹{item.price * item.quantity}</td>
-                                                    <td>
+                                                <tr
+                                                    key={item.id}
+                                                    style={{
+                                                        height: "60px",
+                                                        background: lastUpdatedId === item.id ? "#ffeeba" : "inherit", // yellow highlight
+                                                        transition: "background 0.3s"
+                                                    }}
+                                                >
+                                                    <td style={{ verticalAlign: "middle", fontSize: "1.1rem" }}>{item.itemName}</td>
+                                                    <td style={{ verticalAlign: "middle" }}>
+                                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <Button
+                                                                variant="link"
+                                                                size="sm"
+                                                                className="me-2 p-0"
+                                                                style={{
+                                                                    minWidth: "28px",
+                                                                    height: "28px",
+                                                                    fontSize: "1.3rem",
+                                                                    lineHeight: "1",
+                                                                    boxShadow: "none",
+                                                                    textDecoration: "none" // <-- Add this line to remove underline
+                                                                }}
+                                                                onClick={() => removeFromCart(item.id)}
+                                                                title="Decrease"
+                                                            >
+                                                                –
+                                                            </Button>
+                                                            <span style={{ fontSize: "1.2rem", minWidth: "24px", textAlign: "center" }}>
+                                                                {item.quantity}
+                                                            </span>
+                                                            <Button
+                                                                variant="link"
+                                                                size="sm"
+                                                                className="ms-2 p-0"
+                                                                style={{
+                                                                    minWidth: "28px",
+                                                                    height: "28px",
+                                                                    fontSize: "1.3rem",
+                                                                    lineHeight: "1",
+                                                                    boxShadow: "none",
+                                                                    textDecoration: "none" // <-- Add this line to remove underline
+                                                                }}
+                                                                onClick={() => addToCart({ ...item, id: item.id, item: item.itemName, price: item.price })}
+                                                                title="Increase"
+                                                            >
+                                                                +
+                                                            </Button>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ verticalAlign: "middle", fontSize: "1.1rem" }}>₹{item.price * item.quantity}</td>
+                                                    <td style={{ verticalAlign: "middle" }}>
                                                         <Button
-                                                            variant="danger"
+                                                            variant="link"
                                                             size="sm"
-                                                            onClick={() => removeFromCart(item.id)}
+                                                            style={{
+                                                                minWidth: "32px",
+                                                                height: "32px",
+                                                                fontSize: "1.6rem", // Increased size
+                                                                color: "#dc3545",
+                                                                background: "none",
+                                                                boxShadow: "none",
+                                                                padding: 0,
+                                                                textDecoration: "none"
+                                                            }}
+                                                            className="p-0"
+                                                            onClick={() =>
+                                                                setCart((prevCart) => prevCart.filter((i) => i.id !== item.id))
+                                                            }
+                                                            title="Remove Item"
                                                         >
-                                                            Remove
+                                                            ×
                                                         </Button>
                                                     </td>
                                                 </tr>
