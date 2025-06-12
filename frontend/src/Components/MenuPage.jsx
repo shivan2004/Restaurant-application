@@ -77,6 +77,21 @@ const MenuPage = ({ onNewItemAdded }) => {
         }
     };
 
+    const deleteMenuItem = async (itemId) => {
+        if (!window.confirm("Are you sure you want to delete this item?")) return;
+        try {
+            await axios.delete(`${process.env.REACT_APP_API_URL}/api/items/deleteItem/${itemId}`, {
+                headers: {
+                    Authorization: `Bearer ${getToken()}`
+                }
+            });
+            setMenuItems(prevItems => prevItems.filter(item => item.id !== itemId));
+        } catch (e) {
+            console.error("Error deleting item:", e.message);
+            alert("Failed to delete item.");
+        }
+    };
+
     return (
         <Container className="mt-5">
             <h2 className="text-center mb-4 fw-bold">Menu</h2>
@@ -106,6 +121,14 @@ const MenuPage = ({ onNewItemAdded }) => {
                                                 checked={item.isAvailable}
                                                 onChange={() => toggleAvailability(item.id)}
                                             />
+                                            <Button
+                                                variant="danger"
+                                                size="sm"
+                                                className="mt-2"
+                                                onClick={() => deleteMenuItem(item.id)}
+                                            >
+                                                Delete
+                                            </Button>
                                         </Card.Body>
                                     </Card>
                                 </Col>
